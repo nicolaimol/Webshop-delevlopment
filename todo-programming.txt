@@ -1,0 +1,15 @@
+- backend for online shop, java springboot, spring security, hibernate
+- backend for bank, kotlin springboot, jdbc, spring security
+
+- frontend for online shop, react
+- frontend onlineshop management, vue
+- frontend online shop backend overview, angular
+- frontend bank management, svelte
+
+- db for shop and orders, postgres
+- db for bank, mysql
+
+- logging for both backend, go
+- pulumi kuberbetes IaC, go
+
+- blog for update project, go backend, js jquery tailwind frontend

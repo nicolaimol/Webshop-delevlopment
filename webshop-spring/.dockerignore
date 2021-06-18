@@ -1,0 +1,6 @@
+target
+.idea
+.dockerignore
+Dockerfile
+HELP.md
+webshop.iml

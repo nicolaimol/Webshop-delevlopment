@@ -1,0 +1,30 @@
+version: '3.1'
+
+services: 
+    webshop-spring: 
+        container_name: webshop-spring
+        build: ./webshop-spring/
+        volumes:
+            - ./webshop-spring:/home/webshop
+        ports:
+            - 8080:8080
+    webshop-react: 
+        container_name: webshop-react
+        build: ./webshop-react/
+        volumes:
+            - ./webshop-react:/usr/src/app
+            - /usr/src/app/node_modules
+        ports:
+            - 3000:3000
+
+    blog-db:
+        container_name: blog-db
+        image: mysql
+        volumes:
+            - ./mysql/blog:/var/lib/mysql
+        environments:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_USER: user
+            MYSQL_PASSWORD: password
+        ports:
+            - 8001:3306
