@@ -28,3 +28,9 @@ services:
             MYSQL_PASSWORD: password
         ports:
             - 8001:3306
+        networks:
+            - blog
+
+networks:
+    blog: 
+        driver: bridge

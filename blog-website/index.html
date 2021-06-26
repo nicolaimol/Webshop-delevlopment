@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="./style.css">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div class="main">
+            <nav class="nav">
+                <p onclick="home()">Home</p>
+                <p onclick="posts()">Posts</p>
+                <p onclick="newPost()">New post</p>
+            </nav>
+
+            <div id="home" class="content">
+                <h1>HOME</h1>
+            </div>
+            <div id="posts" class="content">
+                <h1>POST</h1>
+                <div id="post-content">Her skal det komme content</div>
+            </div>
+            <div id="new" class="content">
+                <h1>NEW POST</h1>
+                <div class="new-post" id="new-post">
+                    <input width="80%" id="blog-title" type="text" placeholder="title" value="First blog from browser with auth" />
+                    <textarea id="blog-text" type="text" placeholder="post" value="This is the first blog post made in browser with auth" ></textarea>
+                    <button type="button" onclick="postBlog()" class="">Post</button>
+                </div>
+                <div class="hidden login" id="login">
+                    <input type="text" placeholder="username" id="login-username" />
+                    <input type="password" placeholder="password" id="login-password" />
+                    <button type="button" onclick="login()">Login</button>
+                </div>
+            </div>
+
+
+
+        </div>
+
+
+
+        
+        <script src="./index.js" async defer></script>
+    </body>
+</html>
