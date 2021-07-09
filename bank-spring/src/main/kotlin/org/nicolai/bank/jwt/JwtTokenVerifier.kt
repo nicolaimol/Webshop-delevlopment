@@ -17,6 +17,7 @@ import java.util.stream.Collectors
 import javax.crypto.SecretKey
 import javax.servlet.FilterChain
 import javax.servlet.ServletException
+import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -33,14 +34,38 @@ class JwtTokenVerifier(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        var authorizationHeader: String = request.getHeader(jwtConfig.authorizationHeader)
-        val authorization = request.getSession().getAttribute("token") as String
-        authorizationHeader = authorization
-        if (Strings.isNullOrEmpty(authorizationHeader) || !authorizationHeader.startsWith(jwtConfig.tokenPrefix.toString())) {
-            filterChain.doFilter(request, response)
-            return
+        var authorizationHeader: String? = request.getHeader(jwtConfig.authorizationHeader)
+        val authorization = request.getSession().getAttribute("token") as String?
+        val cookies = request.cookies
+
+        var cookieAuth: String? = null
+
+        if (cookies != null) {
+            for (cookie: Cookie in cookies) {
+                //println(cookie.name + " " + cookie.value)
+                if (cookie.name == "Auth") {
+                    cookieAuth = cookie.value
+                }
+            }
         }
-        val token = authorizationHeader.replace(jwtConfig.tokenPrefix.toString(), "")
+
+
+
+        authorizationHeader = authorization
+        if (Strings.isNullOrEmpty(authorizationHeader) || !authorizationHeader!!.startsWith(jwtConfig.tokenPrefix.toString())) {
+            if (cookieAuth == null) {
+                filterChain.doFilter(request, response)
+                return
+            }
+        }
+
+        var token = authorizationHeader?.replace(jwtConfig.tokenPrefix.toString(), "")
+
+
+        if (cookieAuth != null) {
+            token = cookieAuth
+        }
+
         try {
             val claimsJws: Jws<Claims> = Jwts.parser()
                 .setSigningKey(secretKey)
@@ -60,7 +85,7 @@ class JwtTokenVerifier(
                 null,
                 simpleGrantedAuthorities
             )
-            SecurityContextHolder.getContext().setAuthentication(authentication)
+            SecurityContextHolder.getContext().authentication = authentication
         } catch (e: JwtException) {
             throw IllegalStateException(String.format("Token %s cannot be trusted", token))
         }

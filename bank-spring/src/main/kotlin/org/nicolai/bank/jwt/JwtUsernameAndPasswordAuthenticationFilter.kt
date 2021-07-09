@@ -2,6 +2,12 @@ package org.nicolai.bank.jwt
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
+import org.apache.catalina.Context
+import org.apache.tomcat.util.http.LegacyCookieProcessor
+import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
+import org.springframework.boot.web.server.WebServerFactoryCustomizer
+import org.springframework.context.annotation.Bean
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -13,9 +19,11 @@ import java.time.LocalDate
 import javax.crypto.SecretKey
 import javax.servlet.FilterChain
 import javax.servlet.ServletException
+import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
+
 
 class JwtUsernameAndPasswordAuthenticationFilter(
     authenticationManager: AuthenticationManager,
@@ -65,6 +73,7 @@ class JwtUsernameAndPasswordAuthenticationFilter(
             .compact()
         val session: HttpSession = request.session
         session.setAttribute("token", jwtConfig.tokenPrefix + token)
+        response.addCookie(Cookie("Auth", token))
         response.addHeader(jwtConfig.authorizationHeader, jwtConfig.tokenPrefix + token)
     }
 
@@ -73,4 +82,6 @@ class JwtUsernameAndPasswordAuthenticationFilter(
         this.jwtConfig = jwtConfig
         this.secretKey = secretKey
     }
+
+
 }

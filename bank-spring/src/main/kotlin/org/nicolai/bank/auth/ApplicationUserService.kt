@@ -11,10 +11,11 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 
 @Service
-class ApplicationUserService @Autowired constructor(@param:Qualifier("db") private val applicationUserDao: ApplicationUserDao) :
+class ApplicationUserService @Autowired constructor(@param:Qualifier("dev") private val applicationUserDao: ApplicationUserDao) :
     UserDetailsService {
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
+        println(username)
         return applicationUserDao
             .selectApplicationUserByUsername(username)
             .orElseThrow { UsernameNotFoundException(String.format("Username %s not found", username)) }
