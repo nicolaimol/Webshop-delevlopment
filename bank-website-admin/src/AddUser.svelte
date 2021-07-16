@@ -31,10 +31,6 @@
         
     }
 
-    const klikk = (e) => {
-        e.preventDefault()
-    }
-
 </script>
 
 <div class="addUser">
@@ -46,7 +42,7 @@
     <input type="text" id="address" placeholder="Address" bind:value={user.address} >
 
     <Link to="/users"><button type="button" on:click={addUser}>Add</button></Link>
-    <Link to="/users"><button type="button" on:click={klikk}>Back</button></Link>
+    <Link to="/users"><button type="button" >Return</button></Link>
 </div>
 
 

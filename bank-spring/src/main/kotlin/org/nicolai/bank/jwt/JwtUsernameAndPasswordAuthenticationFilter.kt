@@ -2,12 +2,7 @@ package org.nicolai.bank.jwt
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
-import org.apache.catalina.Context
-import org.apache.tomcat.util.http.LegacyCookieProcessor
-import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
-import org.springframework.boot.web.server.WebServerFactoryCustomizer
-import org.springframework.context.annotation.Bean
+import org.springframework.http.ResponseCookie
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -28,11 +23,12 @@ import javax.servlet.http.HttpSession
 class JwtUsernameAndPasswordAuthenticationFilter(
     authenticationManager: AuthenticationManager,
     jwtConfig: JwtConfig,
-    secretKey: SecretKey
+    secretKey: SecretKey,
+    httpSession: HttpSession
 ) : UsernamePasswordAuthenticationFilter() {
-    //private val authenticationManager: AuthenticationManager
     private val jwtConfig: JwtConfig
     private val secretKey: SecretKey
+    private val httpSession: HttpSession
 
 
 
@@ -44,7 +40,7 @@ class JwtUsernameAndPasswordAuthenticationFilter(
         return try {
             val authenticationRequest: UsernameAndPasswordAuthenticationRequest = ObjectMapper()
                 .readValue<UsernameAndPasswordAuthenticationRequest>(
-                    request.getInputStream(),
+                    request.inputStream,
                     UsernameAndPasswordAuthenticationRequest::class.java
                 )
             val authentication: Authentication = UsernamePasswordAuthenticationToken(
@@ -52,6 +48,8 @@ class JwtUsernameAndPasswordAuthenticationFilter(
                 authenticationRequest.password
             )
             authenticationManager.authenticate(authentication)
+
+
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
@@ -64,6 +62,7 @@ class JwtUsernameAndPasswordAuthenticationFilter(
         chain: FilterChain,
         authResult: Authentication
     ) {
+
         val token: String = Jwts.builder()
             .setSubject(authResult.name)
             .claim("authorities", authResult.authorities)
@@ -71,17 +70,25 @@ class JwtUsernameAndPasswordAuthenticationFilter(
             .setExpiration(Date.valueOf(LocalDate.now().plusDays(jwtConfig.tokenExpirationAfterDays?.toLong()!!)))
             .signWith(secretKey)
             .compact()
+
         val session: HttpSession = request.session
-        session.setAttribute("token", jwtConfig.tokenPrefix + token)
-        response.addCookie(Cookie("Auth", token))
+        session.setAttribute("Auth", jwtConfig.tokenPrefix + token)
+
+        val cookie = Cookie("Auth", token)
+        cookie.isHttpOnly = true
+        cookie.maxAge = 7 * 24 * 60
+        response.addCookie(cookie)
+
         response.addHeader(jwtConfig.authorizationHeader, jwtConfig.tokenPrefix + token)
+        response.writer.println("{\"Auth\": \"Bearer $token\"}")
+
     }
 
     init {
         this.authenticationManager = authenticationManager
         this.jwtConfig = jwtConfig
         this.secretKey = secretKey
+        this.httpSession = httpSession
     }
-
 
 }

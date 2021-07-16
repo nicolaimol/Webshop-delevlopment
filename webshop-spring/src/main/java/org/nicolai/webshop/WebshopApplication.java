@@ -16,6 +16,7 @@ public class WebshopApplication {
 		SpringApplication.run(WebshopApplication.class, args);
 	}
 
+	/*
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
@@ -28,5 +29,6 @@ public class WebshopApplication {
 			}
 		};
 	}
+	 */
 
 }

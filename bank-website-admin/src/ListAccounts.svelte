@@ -28,12 +28,14 @@
     {:else}
         <table class="table">
             <tr>
+                <th>Name</th>
                 <th>Balance</th>
                 <th>Type</th>
                 <th>Transactions</th>
             </tr>
             {#each accounts as account}
                 <tr>
+                    <td>{account.name}</td>
                     <td>{account.balance}</td>
                     <td>{account.type}</td>
                     <td><Link to={"transaction/" + account.id}><button>Transactions</button></Link></td>
@@ -41,4 +43,6 @@
             {/each}
         </table>
     {/if}
+    <Link to={`accounts/${id}/add`}><button>Add new account</button></Link>
+    <Link to={`users`}><button>Return</button></Link>
 </div>

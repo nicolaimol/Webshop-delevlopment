@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.session.Session
 import org.springframework.web.filter.OncePerRequestFilter
 import java.util.function.Function
 import java.util.stream.Collectors
@@ -20,59 +21,135 @@ import javax.servlet.ServletException
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
 
 class JwtTokenVerifier(
     secretKey: SecretKey,
-    jwtConfig: JwtConfig
+    jwtConfig: JwtConfig,
+    httpSession: HttpSession
 ) : OncePerRequestFilter() {
 
     private val secretKey: SecretKey
     private val jwtConfig: JwtConfig
+    private val httpSession: HttpSession
+
+
+
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        var authorizationHeader: String? = request.getHeader(jwtConfig.authorizationHeader)
-        val authorization = request.getSession().getAttribute("token") as String?
-        val cookies = request.cookies
+        //println("jwt verify")
+        if (request.method == "OPTIONS") {
+            return
+            //filterChain.doFilter(request, response)
+        }
 
-        var cookieAuth: String? = null
 
-        if (cookies != null) {
-            for (cookie: Cookie in cookies) {
-                //println(cookie.name + " " + cookie.value)
-                if (cookie.name == "Auth") {
-                    cookieAuth = cookie.value
-                }
+        println(request.method)
+        println(SecurityContextHolder.getContext().authentication)
+        SecurityContextHolder.getContext().authentication = null
+
+        var authorizationHeader: String? = request.getHeader("Auth")
+            authorizationHeader = if (authorizationHeader!= null && authorizationHeader.startsWith("Bearer ")) request.getHeader("Auth") else null
+        //println(authorizationHeader)
+        var authorization: String? = request.session.getAttribute("Auth") as String?
+            authorization = if (authorization != null && authorization.startsWith("Bearer ")) authorization else null
+
+
+        var cookieToken: String? = null
+
+        if (request.cookies != null) {
+            try {
+                cookieToken = request.cookies.filter { cookie: Cookie? -> cookie!!.name == "Auth" }[0].value
+            } catch (e: Exception) {
+                cookieToken = null
             }
+        } else {
+            cookieToken = null
         }
 
 
 
-        authorizationHeader = authorization
+
+
+        /*
+        //authorizationHeader = authorization
         if (Strings.isNullOrEmpty(authorizationHeader) || !authorizationHeader!!.startsWith(jwtConfig.tokenPrefix.toString())) {
-            if (cookieAuth == null) {
-                filterChain.doFilter(request, response)
-                return
+            //filterChain.doFilter(request, response)
+            //return
+
+        }
+
+         */
+
+
+        var token: String? = null
+
+        token?.let {
+        }
+            ?: run { authorizationHeader?.let {
+                token = authorizationHeader.replace("Bearer ", "")
+                println("authorizationHeader: $authorizationHeader")
             }
         }
 
-        var token = authorizationHeader?.replace(jwtConfig.tokenPrefix.toString(), "")
+        token?.let {
+        }
+            ?: run {
+            cookieToken?.let {
+                token = cookieToken
+                println("cookieToken")
+            }
+        }
 
+        token?.let {
+        }
+            ?: run {
+            authorization?.let {
+                token = authorization.replace("Bearer ", "")
+                println("authorization")
+            }
+        }
 
-        if (cookieAuth != null) {
-            token = cookieAuth
+        /*
+
+        if (authorizationHeader != null) {
+            println(authorizationHeader == null + " " + authorizationHeader)
+            token = authorizationHeader.replace("Bearer ", "")
+            //println(token)
+            println("authorizationHeader")
+        }
+
+        else if (cookieToken != null) {
+            token = cookieToken
+            println("cookie")
+        }
+
+        else if (authorization != null) {
+            //token = authorization.replace("Bearer ", "")
+            println("authorization")
+        }
+         */
+
+        //token = null
+
+        if (token == null) {
+            println("token null")
+            filterChain.doFilter(request, response)
+            return
         }
 
         try {
+            println(token)
             val claimsJws: Jws<Claims> = Jwts.parser()
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
-            val body: Claims = claimsJws.getBody()
-            val username: String = body.getSubject()
-            val authorities = body.get("authorities") as List<Map<String, String>>
+            val body: Claims = claimsJws.body
+            val username: String = body.subject
+            val authorities = body["authorities"] as List<Map<String, String>>
             val simpleGrantedAuthorities: Set<SimpleGrantedAuthority> = authorities.stream()
                 .map(Function { m: Map<String, String> ->
                     SimpleGrantedAuthority(
@@ -85,9 +162,13 @@ class JwtTokenVerifier(
                 null,
                 simpleGrantedAuthorities
             )
+
+            //println(request.session.id)
+
             SecurityContextHolder.getContext().authentication = authentication
         } catch (e: JwtException) {
-            throw IllegalStateException(String.format("Token %s cannot be trusted", token))
+            println("not valid")
+            //throw IllegalStateException(String.format("Token %s cannot be trusted", token))
         }
         filterChain.doFilter(request, response)
     }
@@ -95,5 +176,6 @@ class JwtTokenVerifier(
     init {
         this.secretKey = secretKey
         this.jwtConfig = jwtConfig
+        this.httpSession = httpSession
     }
 }

@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@Entity
+@Entity(name = "customer")
 public class User {
 
     @Id

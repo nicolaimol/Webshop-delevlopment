@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -70,5 +71,7 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
         HttpSession session = request.getSession();
         session.setAttribute("token", jwtConfig.getTokenPrefix() + token);
         response.addHeader(jwtConfig.getAuthorizationHeader(), jwtConfig.getTokenPrefix() + token);
+        response.addCookie(new Cookie("Auth", token));
+        response.getWriter().println("{\"Auth\": \"" + token + "\"}");
     }
 }

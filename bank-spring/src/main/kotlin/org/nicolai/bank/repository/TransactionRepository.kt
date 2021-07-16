@@ -1,6 +1,7 @@
 package org.nicolai.bank.repository
 
 import org.nicolai.bank.dto.TransactionDto
+import org.nicolai.bank.dto.TransactionDtoRes
 import org.springframework.jdbc.core.BeanPropertyRowMapper
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
@@ -52,6 +53,23 @@ class TransactionRepository(val db: JdbcTemplate) {
             println(e.message)
             throw SqlException("Fang denne")
         }
+    }
+
+    fun getByUser(id: Int): Map<String, Any> {
+        val sqlUsername = "select username from user, account where account.id = ? and account.owner = user.id"
+        val sqlSend = "select * from transactionview where sender = ?"
+        val sqlRec = "select * from transactionview where receiver = ?"
+
+        val username = db.query(sqlUsername, BeanPropertyRowMapper(String::class.java), id)
+        val sent = db.query(sqlSend, BeanPropertyRowMapper(TransactionDtoRes::class.java), id)
+        val rec = db.query(sqlRec, BeanPropertyRowMapper(TransactionDtoRes::class.java), id)
+
+        val map = HashMap<String, Any>()
+        map["username"] = username
+        map["sent"] = sent
+        map["rec"] = rec
+
+        return map
     }
 
 }

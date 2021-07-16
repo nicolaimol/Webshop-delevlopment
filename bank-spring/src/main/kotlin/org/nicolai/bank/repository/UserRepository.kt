@@ -21,16 +21,16 @@ class UserRepository(val db: JdbcTemplate, val passwordEncoder: PasswordEncoder)
     }
 
     fun addUser(user: UserDto): UserDto?{
-        val SQL = "INSERT INTO USER(username, password, email, phone, address) values (?,?,?,?,?); SELECT MAX(id) FROM User;"
+        val SQL = "INSERT INTO USER(username, password, email, phone, address) values (?,?,?,?,?)"
         try {
-            db.update(
+            val res = db.update(
                 SQL,
                 user.username,
                 passwordEncoder.encode(user.password),
                 user.email,
                 user.phone,
                 user.address)
-
+            println(res)
             var id = db.query("SELECT MAX(id) as ret FROM user", intRowMapper)
             println(id)
             user.id = id[0]

@@ -18,9 +18,9 @@ class AccountRepository(val db: JdbcTemplate) {
     }
 
     fun addOne(accountDto: AccountDto): AccountDto {
-        val sql = "insert into account (type, balance, owner) values(?, ?, ?)"
+        val sql = "insert into account (type, name, balance, owner) values(?, ?, ?, ?)"
         try {
-            var res = db.update(sql, accountDto.type, accountDto.balance, accountDto.owner)
+            var res = db.update(sql, accountDto.type, accountDto.name, accountDto.balance, accountDto.owner)
             var id = db.query("select max(id) as ret from Account", Util.intRowMapper)
             accountDto.id = id[0]
             return accountDto

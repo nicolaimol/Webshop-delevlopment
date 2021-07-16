@@ -1,12 +1,11 @@
 package org.nicolai.bank.auth
 
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository("db")
-class DatabaseApplicationUserDaoService : ApplicationUserDao {
-    //@Autowired
-    // User service for getting all users
+class DatabaseApplicationUserDaoService(val db: JdbcTemplate) : ApplicationUserDao {
 
 
     override fun selectApplicationUserByUsername(username: String?): Optional<ApplicationUser> {

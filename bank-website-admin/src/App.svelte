@@ -10,31 +10,42 @@
 	import ListUsers from './ListUsers.svelte'
 	import ListAccounts from './ListAccounts.svelte'
 	import ListTransactions from './ListTransactions.svelte'
+	import Login from './Login.svelte'
+	import AddAccount from './AddAccount.svelte'
+	import EditUser from './EditUser.svelte'
 
 	export let url = ""
 
 	////"start": "sirv public --no-clear"
+
 </script>
 
 
 <Router url="{url}">
 	<Navbar />
 
+
 	<div class="container">
 		<Route path="users">
 			<ListUsers />
 		</Route>
-		<Route path="newuser">
+		<Route path="/user/:id/edit" let:params>
+			<EditUser id="{params.id}"/>
+		</Route>
+		<Route path="user/add">
 			<AddUser />
 		</Route>
 		<Route path="/accounts/:id" let:params>
 			<ListAccounts id="{params.id}"/>
 		</Route>
+		<Route path="/accounts/:id/add" let:params>
+			<AddAccount id="{params.id}"/>
+		</Route>
 		<Route path="/transaction/:id" let:params>
 			<ListTransactions id="{params.id}"/>
 		</Route>
 		<Route path="/">
-			Hellu
+			<Login />
 		</Route>
 	</div>
 </Router>

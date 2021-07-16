@@ -20,13 +20,13 @@
                     <td>{user.phone}</td>
                     <td>{user.address}</td>
                     <td><Link to={"/accounts/"+user.id} ><button>Accounts</button></Link></td>
-                    <td><button>Change</button></td>
+                    <td><Link to={`/user/${user.id}/edit`}><button>Change</button></Link></td>
                     <td><button on:click={deleteUser(user.id)}>Delete</button></td>
                 </tr>
             {/each}
         </table>
     {/if}
-    <Link to="/newuser"><button>Add new</button></Link>
+    <Link to="/user/add"><button>Add new</button></Link>
 
 </div>
 

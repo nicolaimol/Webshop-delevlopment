@@ -16,14 +16,12 @@ class DevApplicationUserDaoService( val passwordEncoder: PasswordEncoder) : Appl
     override fun selectApplicationUserByUsername(username: String?): Optional<ApplicationUser> {
         for (user in getUsers()) {
             if (user.username == username) {
-                println("User found")
                 return Optional.of(ApplicationUser(username, user.password,
                      HashSet<GrantedAuthority?>(), true,
                     true,true, true))
             }
         }
 
-        println("User not found")
         return Optional.empty()
     }
 

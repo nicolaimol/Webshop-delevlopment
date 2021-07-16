@@ -15,7 +15,6 @@ class ApplicationUserService @Autowired constructor(@param:Qualifier("dev") priv
     UserDetailsService {
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
-        println(username)
         return applicationUserDao
             .selectApplicationUserByUsername(username)
             .orElseThrow { UsernameNotFoundException(String.format("Username %s not found", username)) }

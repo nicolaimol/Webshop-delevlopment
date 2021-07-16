@@ -13,9 +13,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.access.channel.ChannelProcessingFilter
+import org.springframework.web.cors.CorsUtils
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import javax.crypto.SecretKey
+import javax.servlet.http.HttpSession
 
 @Configuration
 @EnableWebSecurity
@@ -24,6 +27,7 @@ class SecurityConfig(
     private val applicationUserService: ApplicationUserService,
     private val secretKey: SecretKey,
     private val jwtConfig: JwtConfig,
+    private val httpSession: HttpSession
     //private val daoAuthenticationProvider: DaoAuthenticationProvider
 
 ) : WebSecurityConfigurerAdapter() {
@@ -32,14 +36,18 @@ class SecurityConfig(
     @Override
     override fun configure(http: HttpSecurity) {
         http.csrf().disable()
+            .cors().disable()
             .headers().frameOptions().disable()
             .and()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
             .and()
-            .addFilter(JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey))
-            .addFilterAfter(JwtTokenVerifier(secretKey, jwtConfig), JwtUsernameAndPasswordAuthenticationFilter::class.java)
+            .addFilterBefore(WebSecurityCorsFilter(), ChannelProcessingFilter::class.java)
+            .addFilter(JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey, httpSession))
+            .addFilterAfter(JwtTokenVerifier(secretKey, jwtConfig, httpSession), JwtUsernameAndPasswordAuthenticationFilter::class.java)
             .authorizeRequests()
+            //.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
             .antMatchers("/h2_console/*").permitAll()
+            .antMatchers("/api/test").authenticated()
             .antMatchers("**").permitAll()
 
     }
@@ -57,29 +65,6 @@ class SecurityConfig(
         return provider
     }
 
-    @Bean
-    fun corsConfigurer(): WebMvcConfigurer? {
-        return object : WebMvcConfigurer {
-            override fun addCorsMappings(registry: CorsRegistry) {
-                registry.addMapping("/**")
-                    .allowedOriginPatterns("*")
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "PATCH")
-                    .allowCredentials(true)
-            }
-        }
-    }
-
-    /*
-    @Bean
-    fun cookieProcessorCustomizer(): WebServerFactoryCustomizer<TomcatServletWebServerFactory>? {
-        return WebServerFactoryCustomizer { serverFactory: TomcatServletWebServerFactory ->
-            serverFactory.addContextCustomizers(
-                TomcatContextCustomizer { context: Context ->
-                    context.cookieProcessor = LegacyCookieProcessor()
-                })
-        }
-    }
-
-     */
-
 }
+
+

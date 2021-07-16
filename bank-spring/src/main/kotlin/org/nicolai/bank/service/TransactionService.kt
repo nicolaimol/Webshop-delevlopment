@@ -22,4 +22,8 @@ class TransactionService(val transactionRepository: TransactionRepository) {
 
     }
 
+    fun getByUser(id: Int): Map<String, Any> {
+        return transactionRepository.getByUser(id)
+    }
+
 }

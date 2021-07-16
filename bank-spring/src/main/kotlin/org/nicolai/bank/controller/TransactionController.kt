@@ -19,8 +19,8 @@ class TransactionController(val transactionService: TransactionService) {
     }
 
     @GetMapping("/{id}")
-    fun getByUser(@PathVariable id: Int): Map<String, List<TransactionDto>> {
-        return emptyMap()
+    fun getByUser(@PathVariable id: Int): Map<String, Any> {
+        return transactionService.getByUser(id)
     }
 
 }

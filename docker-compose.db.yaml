@@ -6,6 +6,7 @@ services:
         image: mysql
         volumes:
             - ./mysql/blog:/var/lib/mysql
+            # - ./sql-scripts/blog.sql:/docker-entrypoint-initdb.d
         environment:
             MYSQL_ROOT_PASSWORD: password
             MYSQL_USER: user
@@ -14,7 +15,38 @@ services:
             - 8001:3306
         networks:
             - blog
+    bank-db:
+        container_name: bank-db
+        image: mysql
+        volumes:
+            - ./mysql/bank:/var/lib/mysql
+            # - ./sql-scripts/bank.sql:/docker-entrypoint-initdb.d
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_USER: user
+            MYSQL_PASSWORD: password
+        ports:
+            - 8091:3306
+        networks:
+            - bank
+    webshop-db:
+        container_name: webshop-db
+        image: postgres
+        volumes:
+            - ./postgres/webshop:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_DB=webshop
+            - POSTGRES_USER=spring
+            - POSTGRES_PASSWORD=spring_password
+        ports:
+            - 5432:5432
+        networks:
+            - webshop
 
 networks:
     blog: 
+        driver: bridge
+    bank: 
+        driver: bridge
+    webshop:
         driver: bridge

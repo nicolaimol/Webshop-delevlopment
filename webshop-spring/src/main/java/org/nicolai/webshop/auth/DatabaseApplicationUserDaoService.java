@@ -1,6 +1,8 @@
 package org.nicolai.webshop.auth;
 
+import org.nicolai.webshop.model.Admin;
 import org.nicolai.webshop.model.User;
+import org.nicolai.webshop.repository.AdminRepository;
 import org.nicolai.webshop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -11,20 +13,21 @@ import java.util.Optional;
 public class DatabaseApplicationUserDaoService implements ApplicationUserDao{
 
     @Autowired
-    UserRepository userRepository;
+    AdminRepository adminRepository;
 
     @Override
     public Optional<ApplicationUser> selectApplicationUserByUsername(String username) {
 
-        User user = null;
+        Admin user = null;
         try {
-            user = userRepository.findByUsername(username);
+            user = adminRepository.findByUsername(username);
+            System.out.println(user.getRole().getGrantedAuthorities());
         } catch (Exception e) {
             System.out.println("No user found");
         }
         if (user == null) return Optional.empty();
         ApplicationUser applicationUser = new ApplicationUser(username, user.getPassword(),
-                null, true,
+                user.getRole().getGrantedAuthorities(), true,
                 true ,true, true);
         return Optional.of(applicationUser);
     }

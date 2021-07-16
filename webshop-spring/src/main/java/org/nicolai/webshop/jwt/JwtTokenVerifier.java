@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -38,18 +39,40 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String authorizationHeader = request.getHeader(jwtConfig.getAuthorizationHeader());
-        String authorization = (String) request.getSession().getAttribute("token");
+        String authorizationHeader = request.getHeader("Auth");
+        String authorization = (String) request.getSession().getAttribute("Auth");
+        String cookieToken = null;
 
+        for (Cookie cookie: request.getCookies()) {
+            if (cookie.getName().equals("Auth")) {
+                cookieToken = cookie.getValue();
+            }
+        }
 
-        authorizationHeader = authorization;
+        String token = null;
 
-        if (Strings.isNullOrEmpty(authorizationHeader) || !authorizationHeader.startsWith(jwtConfig.getTokenPrefix())) {
+        if (authorizationHeader != null) {
+            token = authorizationHeader.replace(jwtConfig.getTokenPrefix(), "");
+        }
+
+        if (token == null) {
+            if (authorization != null) {
+                token = authorization.replace(jwtConfig.getTokenPrefix(), "");
+            }
+        }
+
+        if (token == null) {
+            if (cookieToken != null) {
+                token = cookieToken;
+            }
+        }
+
+        SecurityContextHolder.getContext().setAuthentication(null);
+
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = authorizationHeader.replace(jwtConfig.getTokenPrefix(), "");
 
         try {
 

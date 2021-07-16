@@ -12,6 +12,11 @@ class AccountService(val accountRepository: AccountRepository) {
     }
 
     fun addOne(accountDto: AccountDto): AccountDto {
+
+        if (accountDto.balance == null) {
+            accountDto.balance = 0.0
+        }
+
         return accountRepository.addOne(accountDto)
     }
 
